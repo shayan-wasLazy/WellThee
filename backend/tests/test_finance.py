@@ -20,7 +20,7 @@ def test_summary_uses_decimal_and_excludes_transfers() -> None:
     assert result.expenses_by_category == {"Food": Decimal("250.05")}
 
 
-def test_refund_offsets_expenses() -> None:
+def test_refund_offsets_expense_and_category() -> None:
     payload = SummaryRequest(transactions=[
         TransactionInput(amount=Decimal("500"), type="expense", category="Shopping"),
         TransactionInput(amount=Decimal("100"), type="refund", category="Shopping"),
@@ -28,3 +28,4 @@ def test_refund_offsets_expenses() -> None:
     result = calculate_summary(payload)
     assert result.expenses == Decimal("400")
     assert result.net_cash_flow == Decimal("-400")
+    assert result.expenses_by_category == {"Shopping": Decimal("400")}

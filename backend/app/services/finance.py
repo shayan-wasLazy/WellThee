@@ -19,6 +19,7 @@ def calculate_summary(payload: SummaryRequest) -> SummaryResponse:
             category_totals[transaction.category] += transaction.amount
         elif transaction.type == "refund":
             expenses -= transaction.amount
+            category_totals[transaction.category] -= transaction.amount
 
     net_cash_flow = income - expenses
     savings_rate = (net_cash_flow / income * Decimal("100")) if income > ZERO else ZERO

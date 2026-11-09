@@ -39,5 +39,5 @@ export const SPENDING_SERIES = [
   { date: "Nov 07", actual: 10450, planned: 12000 },
   { date: "Nov 08", actual: 10800, planned: 13200 },
   { date: "Nov 09", actual: 12000, planned: 14400 },
-  { date: "Nov 10", actual: 12400, planned: 15600 }
+  { date: "Nov 10", actual: 12000, planned: 15600 }
 ];
