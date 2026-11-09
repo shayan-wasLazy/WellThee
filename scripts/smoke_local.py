@@ -45,7 +45,7 @@ def expect(condition: bool, message: str) -> None:
 
 def main() -> int:
     suffix = uuid.uuid4().hex[:12]
-    email = f"local-smoke-{suffix}@example.test"
+    email = f"local-smoke-{suffix}@example.com"
     password = "local-smoke-password-2026"
 
     print(f"Checking local WealthOS at {BASE_URL}")
