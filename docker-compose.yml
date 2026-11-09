@@ -1,13 +1,13 @@
 services:
   db:
-    image: postgres:18-alpine
+    image: postgres:16-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: wealthos
       POSTGRES_USER: wealthos
       POSTGRES_PASSWORD: wealthos
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - wealthos-postgres:/var/lib/postgresql/data
     healthcheck:
@@ -21,20 +21,39 @@ services:
       context: ./backend
     restart: unless-stopped
     environment:
+      ENVIRONMENT: development
       DATABASE_URL: postgresql+psycopg://wealthos:wealthos@db:5432/wealthos
-      JWT_SECRET: local-development-only-change-this-before-deploy
+      JWT_SECRET: ${JWT_SECRET:-wealthos-local-development-secret-change-me}
+      ACCESS_TOKEN_MINUTES: ${ACCESS_TOKEN_MINUTES:-10080}
       FRONTEND_ORIGINS: http://localhost:3000
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
+      PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET:-}
+      PAYPAL_WEBHOOK_ID: ${PAYPAL_WEBHOOK_ID:-}
       PAYPAL_ENVIRONMENT: sandbox
     ports:
       - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
 
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        BACKEND_URL: http://backend:8000
     restart: unless-stopped
     environment:
       BACKEND_URL: http://backend:8000
@@ -42,7 +61,8 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
 volumes:
   wealthos-postgres:
