@@ -310,9 +310,49 @@ A three-minute demo should show: opening the workspace; importing or adding a tr
 7. PayPal: Sandbox order/capture, verified webhooks, idempotency and status reconciliation.
 8. Hardening: end-to-end tests, accessibility, responsive review, deployment and demo rehearsal.
 
-## Engineering record — first implementation slice
+## Engineering record — implementation status (10 November 2026)
 
-- **Completed:** Next.js dashboard shell; demo ledger; manual transaction entry; CSV import/export; budget and goal views; ECharts spending series; deterministic assistant preview; FastAPI summary endpoint; Decimal-based calculation tests.
-- **Not implemented:** database persistence, authentication, live bank data, LangGraph/LLM execution, PayPal, receipt OCR, production forecasting or deployment.
-- **Known limitations:** browser state resets on refresh; demo data is illustrative; frontend money math uses JavaScript numbers; longer chart ranges are unavailable until historical data exists.
-- **Next:** database-backed transaction APIs, API contract tests, PostgreSQL models and migrations; then connect the frontend to persisted records.
+### Implemented in the repository
+
+- Next.js App Router dashboard with overview, transaction ledger, budgets, goals, trends and assistant screens.
+- Manual transaction creation; CSV import/export; category correction; transaction deletion.
+- Budget creation/update and savings-goal creation/contribution tracking in the current period.
+- Responsive ECharts spending chart for demo data and signed-in user transaction history.
+- FastAPI APIs for authentication, transactions, CSV imports, budgets, goals, analytics, assistant queries and PayPal Sandbox orders/capture/webhooks.
+- SQLAlchemy models for users, transactions, budgets, goals, payments, PayPal events and agent-run traces.
+- Alembic initial schema migration and Docker Compose for local PostgreSQL, API and web app.
+- Password hashing, HttpOnly SameSite session cookie (Secure in production), bearer auth for external clients, user ownership checks and Origin validation on unsafe requests.
+- Python Decimal and SQL NUMERIC calculation path; refund/transfer treatment is explicit.
+- LangGraph orchestrator and specialist deterministic finance nodes. An optional OpenAI explanation layer can add qualitative context; numeric answers remain deterministic and unsupported numeric LLM output is rejected.
+- PayPal REST Orders v2 Sandbox order creation, approval/capture and PayPal webhook signature verification/idempotency.
+- GitHub Actions workflow for frontend typecheck/build and backend tests.
+- Render Blueprint for a preview deployment in Singapore.
+
+### Not yet implemented or verified
+
+- Account and financial-profile CRUD, currency/time-zone onboarding and a full audit log for user edits.
+- Recurring transaction rules and automated recurring-expense detection.
+- Receipt OCR and review workflow.
+- Production-grade cash-flow forecasting with historical uncertainty bands.
+- Full transaction edit UI beyond category correction; backend PATCH supports additional fields.
+- Bank aggregation or live bank sync.
+- Goal funding through PayPal. A PayPal Sandbox order is stored as a separate payment record; it does not move money into a savings goal or post to the transaction ledger.
+- A production PayPal merchant integration. Sandbox credentials, webhook ID and a Sandbox buyer account must be configured and verified. Live capability is country/account dependent; the sample checkout is USD only.
+- Production deployment, successful remote build/test status and a durable database plan. The Render Blueprint intentionally uses free preview resources; Render free Postgres expires after 30 days and has no backups.
+- Production hardening including refresh-token rotation, account recovery, rate limiting, stronger import preview/review, CSP and a security review.
+
+### Known limitations
+
+- The unauthenticated workspace is illustrative demo data stored in browser state and resets on refresh.
+- Authenticated browser data is persisted through the FastAPI/PostgreSQL path.
+- The dashboard converts API decimal strings to JavaScript numbers for display and charting. All source-of-truth money calculations must remain in Python Decimal/PostgreSQL NUMERIC.
+- The LangGraph path runs without a model key using deterministic specialist nodes. Add OPENAI_API_KEY to enable the qualitative explanation layer.
+- The PayPal sandbox checkout is separate from personal cash-flow totals and does not represent a bank transfer or savings contribution.
+
+### Next implementation order
+
+1. Run GitHub Actions and resolve every typecheck, build and test failure.
+2. Review and approve the Render Blueprint after selecting a workspace and acknowledging the 30-day free database limitation.
+3. Configure the frontend origin and verify registration, cookie restore, CRUD, CSV import, and account isolation on the deployed URL.
+4. Configure PayPal Sandbox credentials/webhook and complete an approval/capture/duplicate-webhook test.
+5. Add account/profile and recurring rules; then implement a clearly qualified month-end forecast from sufficient transaction history.

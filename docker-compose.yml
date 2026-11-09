@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wealthos
+      POSTGRES_USER: wealthos
+      POSTGRES_PASSWORD: wealthos
+    ports:
+      - "5432:5432"
+    volumes:
+      - wealthos-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wealthos -d wealthos"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://wealthos:wealthos@db:5432/wealthos
+      JWT_SECRET: local-development-only-change-this-before-deploy
+      FRONTEND_ORIGINS: http://localhost:3000
+      PAYPAL_ENVIRONMENT: sandbox
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://backend:8000
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  wealthos-postgres:

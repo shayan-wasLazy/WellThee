@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: wealthos-api
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    autoDeployTrigger: checksPass
+    healthCheckPath: /ready
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: wealthos-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+      - key: FRONTEND_ORIGINS
+        sync: false
+      - key: PAYPAL_ENVIRONMENT
+        value: sandbox
+
+  - type: web
+    name: wealthos-web
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile.frontend
+    dockerContext: .
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: BACKEND_URL
+        fromService:
+          type: web
+          name: wealthos-api
+          envVarKey: RENDER_EXTERNAL_URL
+
+databases:
+  - name: wealthos-db
+    databaseName: wealthos
+    user: wealthos
+    plan: free
+    region: singapore
+    postgresMajorVersion: 18
