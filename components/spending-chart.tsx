@@ -85,7 +85,7 @@ export function SpendingChart({ period, transactions, demo, budgets }: Props) {
       textStyle: { color: "#f7f6f0", fontFamily: "inherit", fontSize: 12 },
       formatter: (params) => {
         const rows = Array.isArray(params) ? params : [params];
-        const label = String(rows[0]?.axisValue ?? "");
+        const label = String(rows[0]?.name ?? "");
         const actual = Number(rows.find((point) => point.seriesName === "Actual")?.value ?? 0);
         const planned = Number(rows.find((point) => point.seriesName === "Planned")?.value ?? 0);
         return label + "<br/>Actual: ₹" + actual.toLocaleString("en-IN") + "<br/>Planned pace: ₹" + planned.toLocaleString("en-IN");
